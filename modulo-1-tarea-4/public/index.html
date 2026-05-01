@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Usuarios - Tarea 4</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+            background: #eef2f7;
+            color: #202124;
+        }
+
+        header {
+            background: #263238;
+            color: white;
+            padding: 28px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 30px;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            color: #cfd8dc;
+        }
+
+        .container {
+            width: min(1000px, 92%);
+            margin: 30px auto;
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 22px;
+            color: #263238;
+        }
+
+        .card p {
+            color: #607d8b;
+            line-height: 1.5;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+            color: #37474f;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 16px;
+            border: 1px solid #b0bec5;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #1976d2;
+        }
+
+        button {
+            border: none;
+            border-radius: 8px;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background: #1976d2;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #455a64;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #c62828;
+            color: white;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+
+        .message {
+            margin-top: 14px;
+            padding: 10px;
+            border-radius: 8px;
+            display: none;
+            font-size: 14px;
+        }
+
+        .message.show {
+            display: block;
+        }
+
+        .success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border: 1px solid #a5d6a7;
+        }
+
+        .error {
+            background: #ffebee;
+            color: #b71c1c;
+            border: 1px solid #ef9a9a;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .table-header h2 {
+            margin: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #eceff1;
+        }
+
+        th,
+        td {
+            padding: 13px;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+        }
+
+        th {
+            color: #37474f;
+        }
+
+        .empty,
+        .loading,
+        .error-row {
+            text-align: center;
+            color: #607d8b;
+            padding: 24px;
+        }
+
+        .error-row {
+            color: #b71c1c;
+        }
+
+        footer {
+            text-align: center;
+            color: #607d8b;
+            margin: 30px 0;
+            font-size: 14px;
+        }
+
+        @media (max-width: 800px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn-secondary {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Registro de Usuarios</h1>
+        <p>Aplicación simple para integrar Frontend, Backend y MongoDB</p>
+    </header>
+
+    <main class="container">
+        <section class="card">
+            <h2>Nuevo usuario</h2>
+            <p>Completá el formulario para guardar un usuario en la base de datos.</p>
+
+            <form id="userForm">
+                <label for="name">Nombre</label>
+                <input id="name" type="text" placeholder="Ej: Juan Pérez" required>
+
+                <label for="email">Email</label>
+                <input id="email" type="email" placeholder="Ej: juan@email.com" required>
+
+                <button id="saveButton" class="btn-primary" type="submit">
+                    Guardar usuario
+                </button>
+            </form>
+
+            <div id="message" class="message"></div>
+        </section>
+
+        <section class="card">
+            <div class="table-header">
+                <h2>Usuarios registrados</h2>
+                <button id="reloadButton" class="btn-secondary" type="button">
+                    Recargar listado
+                </button>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Email</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="usersBody">
+                    <tr>
+                        <td colspan="3" class="loading">Cargando usuarios...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        Tarea 4 - Integración Front-Back con Node.js, Express y MongoDB - Argenis Pinto - 2026
+    </footer>
+
+    <script>
+        const userForm = document.getElementById('userForm');
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const usersBody = document.getElementById('usersBody');
+        const message = document.getElementById('message');
+        const saveButton = document.getElementById('saveButton');
+        const reloadButton = document.getElementById('reloadButton');
+
+        const API_URL = '/users';
+
+        const showMessage = (text, type) => {
+            message.textContent = text;
+            message.className = `message show ${type}`;
+
+            setTimeout(() => {
+                message.className = 'message';
+                message.textContent = '';
+            }, 3500);
+        };
+
+        const cleanText = (value) => {
+            return String(value)
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        };
+
+        const getJsonResponse = async (response) => {
+            const data = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(data.error || 'No se pudo completar la solicitud');
+            }
+
+            return data;
+        };
+
+        const renderUsers = (users) => {
+            if (users.length === 0) {
+                usersBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="empty">Todavía no hay usuarios registrados.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            usersBody.innerHTML = users.map((user) => {
+                return `
+                    <tr>
+                        <td>${cleanText(user.name)}</td>
+                        <td>${cleanText(user.email)}</td>
+                        <td>
+                            <button class="btn-delete" data-id="${cleanText(user._id)}">
+                                Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        };
+
+        const loadUsers = async () => {
+            usersBody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="loading">Cargando usuarios...</td>
+                </tr>
+            `;
+
+            reloadButton.disabled = true;
+
+            try {
+                const response = await fetch(API_URL);
+                const users = await getJsonResponse(response);
+                renderUsers(users);
+            } catch (error) {
+                usersBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="error-row">
+                            Error al cargar usuarios: ${cleanText(error.message)}
+                        </td>
+                    </tr>
+                `;
+            } finally {
+                reloadButton.disabled = false;
+            }
+        };
+
+        const createUser = async (user) => {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(user)
+            });
+
+            return getJsonResponse(response);
+        };
+
+        const deleteUser = async (id) => {
+            const response = await fetch(`${API_URL}/${id}`, {
+                method: 'DELETE'
+            });
+
+            return getJsonResponse(response);
+        };
+
+        userForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const user = {
+                name: nameInput.value.trim(),
+                email: emailInput.value.trim()
+            };
+
+            if (!user.name || !user.email) {
+                showMessage('Todos los campos son obligatorios', 'error');
+                return;
+            }
+
+            saveButton.disabled = true;
+            saveButton.textContent = 'Guardando...';
+
+            try {
+                await createUser(user);
+                userForm.reset();
+                showMessage('Usuario guardado correctamente', 'success');
+                await loadUsers();
+            } catch (error) {
+                showMessage(error.message, 'error');
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Guardar usuario';
+            }
+        });
+
+        usersBody.addEventListener('click', async (event) => {
+            const button = event.target.closest('button[data-id]');
+
+            if (!button) {
+                return;
+            }
+
+            const id = button.dataset.id;
+
+            try {
+                await deleteUser(id);
+                showMessage('Usuario eliminado correctamente', 'success');
+                await loadUsers();
+            } catch (error) {
+                showMessage(error.message, 'error');
+            }
+        });
+
+        reloadButton.addEventListener('click', loadUsers);
+
+        loadUsers();
+    </script>
+</body>
+</html>
